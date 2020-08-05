@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Payoff Calculator</title>
+</head>
+<body>
+    <h3>Calculate your timeline for paying off credit cards</h3>
+    <form action="">
+        <div id="user_info" class="container">
+            <label for="income-period">Income Frequency</label>
+            <select name="income-period" id="income-period" required>
+                <option value="biweekly">Bi-Weekly</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+            <label for="next-pay">Next Payday</label>
+            <input type="date" name="next-pay" id="next-pay" required>
+            <label for="payment-time">Payment Frequency</label>
+            <select name="payment-time" id="payment-time" required>
+                <option value="pay-period">Per Paycheck</option>
+                <option value="pay-monthly">Monthly</option>
+            </select>
+            <input id="submit_user" type="button" value="Submit Info" onclick="storeUser()">
+        </div>
+        <div id="cc_info" class="container">
+            <label for="nickname">Nickname</label>
+            <input type="text" name="nickname" id="nickname">
+            <label for="apr">APR%</label>
+            <input type="number" name="apr" id="apr" required>
+            <label for="bills-on-card">Amount of bills on card</label>
+            <input type="number" name="bills-on-card" id="bills-on-card" required>
+            <label for="pay-towards-card">Payment toward card per payment</label>
+            <input type="number" name="pay-towards-card" id="pay-towards-card" required>
+            <label for="card-balance">Current balance of card</label>
+            <input type="number" name="card-balance" id="card-balance" required>
+            <input id="add_card" type="button" value="Add Another Card" onclick="addCard(true)">
+            <input id="submit_cards" type="button" value="Calculate Payoff" onclick="addCard(false)">
+        </div>
+    </form>
+    <div id="output">
+        <h3 id="output">
+
+        </h3>
+        <p id="output">
+            
+        </p>
+    </div>
+    <script src="/dist/js/app.js"></script>
+    <link rel="stylesheet" type="text/css" href="/dist/css/main.css" />
+</body>
+</html>
