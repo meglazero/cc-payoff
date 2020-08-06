@@ -113,6 +113,7 @@ function calculateCard(card, day, month, i){
                 //     payment = curCard.payment - curCard.bills / 2
                 // }
             } else if (prevBal < curCard.balance){
+                document.querySelector('div#output').innerHTML += '<h2>Card will never be paid off</h2>'
                 return false
             }
             cardCalc.push({balance: curCard.balance, month: month, days: payDays})
@@ -153,7 +154,9 @@ function calculate_payoff(){
         result = calculateCard(card, day, month, i)
         day, month, i = result[0], result[1], result[2]
     }
-    document.querySelector('div#output').innerHTML = '<h2> Total Cards Ran: ' + cards.length + '</h2>' + document.querySelector('div#output').innerHTML
+    if (result != false){
+        document.querySelector('div#output').innerHTML = '<h2> Total Cards Ran: ' + cards.length + '</h2>' + document.querySelector('div#output').innerHTML
+    }
     document.querySelector('div#cc_info').style.display = 'none'
     document.querySelector('div#user_info').style.display = 'block'
     cards = []
