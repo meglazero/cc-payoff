@@ -1,31 +1,5 @@
 let incomePeriod, nextPayday, paymentFreq
 let cards = []
-// let months = {
-//     0: 'Jan',
-//     Jan: 31,
-//     1: 'Feb',
-//     Feb: 28,
-//     2: 'Mar',
-//     Mar: 31,
-//     3: 'Apr',
-//     Apr: 30,
-//     4: 'May',
-//     May: 31,
-//     5: 'Jun',
-//     Jun: 30,
-//     6: 'Jul',
-//     Jul: 31,
-//     7: 'Aug',
-//     Aug: 31,
-//     8: 'Sep',
-//     Sep: 30,
-//     9: 'Oct',
-//     Oct: 31,
-//     10: 'Nov',
-//     Nov: 30,
-//     11: 'Dec',
-//     Dec: 31
-// }
 
 let monthsArr = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
@@ -34,13 +8,47 @@ function currency(num, places){
     return Math.round(num*x)/x
 }
 
-// let curTime = new Date()
-// document.querySelector('input#next-pay').value = curTime.getFullYear() + '-' + curTime.getMonth() + '-' + curTime.getDate()
+function getStrMonth(month){
+    switch(month){
+        case 0:
+            return 'January';
+            break;
+        case 1:
+            return 'February';
+            break;
+        case 2:
+            return 'March';
+            break;
+        case 3:
+            return 'April';
+            break;
+        case 4:
+            return 'May';
+            break;
+        case 5:
+            return 'June';
+            break;
+        case 6:
+            return 'July';
+            break;
+        case 7:
+            return 'August';
+            break;
+        case 8:
+            return 'September';
+            break;
+        case 9:
+            return 'October';
+            break;
+        case 10:
+            return 'November';
+            break;
+        case 11:
+            return 'December';
+            break;
+    }
 
-// function getStrMonth(date){
-//     strMonth = date.getMonth()
-
-// }
+}
 
 function storeUser(){
     incomePeriod = document.querySelector('select#income-period').value
@@ -48,6 +56,8 @@ function storeUser(){
     paymentFreq = document.querySelector('select#payment-time').value
     // console.log(document.querySelector('input#next-pay').value)
     // document.querySelector('input#submit_user').disabled = true
+    document.querySelector('div#cc_info').style.display = 'block'
+    document.querySelector('div#user_info').style.display = 'none'
 }
 
 function addCard(input){
@@ -76,61 +86,141 @@ function addCard(input){
     } else {
         // document.querySelector('input#add_card').disabled = true
         // document.querySelector('input#submit_cards').disabled = true
-        calculatePayoff()
+        calculate_payoff()
     }
 }
 
-function calculatePayoff(){
-    let month = []
-    for (card in cards){
-        let curCard = cards[card]
-        let dailyAPR = (curCard.apr / 100.00) / 365.00
-        let curmonth = nextPayday.getMonth()
-        let curday = nextPayday.getDate()
-        let monthPay = 1
-        let payment = 0
-        while (curCard.balance > 0){
-
-            if (paymentFreq === 'pay-monthly' || incomePeriod === 'monthly') {
-                //Do calculations for every monthly pay
-
-            } else if (paymentFreq === 'pay-period') {
-                //Do calculations for every payday based on payday
-                daysInMonth = monthsArr[curmonth]
-                // console.log(curday + '|' + curmonth + '|' + monthPay)
-                if (curday + 14 < daysInMonth){
-                    curday += 14
-                    monthPay++
-                } else {
-                    //end the month calculations
-                    curCard.balance = currency(((Number(curCard.balance)+Number(curCard.bills))*(1+(dailyAPR*daysInMonth)))-(Number(curCard.payment)*monthPay), 2)
-                    if(curCard.balance <= 0){
-                        curCard.balance = 0
-                        if (card != cards.length - 1){
-                            payment = curCard.payment - curCard.bills / 2
-                        }
-                    }
-                    month.push(curCard.balance)
-                    //increment month and add days and start over
-                    curday = (curday + 14) - daysInMonth
-                    if (curmonth === 11){
-                        curmonth = 0
-                    } else {
-                        curmonth++
-                    }
-                    monthPay = 1
-                }
-                // month = nextPayday.getMonth()
-                // console.log(months.month)
-                // console.log(nextPayday.getDate())
+function calculateCard(card, day, month, i){
+    let curCard = cards[card]
+    let payPeriodsInMonth = 1
+    let dailyAPR = (curCard.apr / 100.00) / 365.00
+    let cardCalc = []
+    let payDays = []
+    while(curCard.balance > 0){
+        let daysInMonth = monthsArr[month]
+        if (day + 14 <= daysInMonth){
+            payDays.push(day)
+            day += 14
+            payPeriodsInMonth++
+        } else {
+            payDays.push(day)
+            prevBal = curCard.balance
+            curCard.balance = currency(((Number(curCard.balance)+Number(curCard.bills))*
+            (1+(dailyAPR*daysInMonth)))-(Number(curCard.payment)*payPeriodsInMonth), 2)
+            if(curCard.balance <= 0){
+                curCard.balance = 0
+                // if (card != cards.length - 1){
+                //     payment = curCard.payment - curCard.bills / 2
+                // }
+            } else if (prevBal < curCard.balance){
+                return false
             }
+            cardCalc.push({balance: curCard.balance, month: month, days: payDays})
+            //increment month and add days and start over
+            payDays = []
+            day = (day + 14) - daysInMonth
+            if (month === 11){
+                month = 0
+            } else {
+                month++
+            }
+            payPeriodsInMonth = 1
         }
-        let i = 1
-        document.querySelector('h3#output').innerHTML += 'Card ' + i
-        month.forEach(element => {
-            document.querySelector('p#output').innerHTML += i + ' month: ' +  element + '<br>'
-            i++
-        });
     }
-    // document.querySelector('div#output').innerHTML = month
+    if (curCard.nickname != ''){
+        document.querySelector('div#output').innerHTML += '<h3>Card ' + curCard.nickname + '</h3>'
+    } else {
+        let cardNum = Number(card) + 1
+        document.querySelector('div#output').innerHTML += '<h3>Card ' + cardNum + '</h3>'
+    }
+    cardCalc.forEach(element => {
+        document.querySelector('div#output').innerHTML += '<p>' + i + ' ' + getStrMonth(element.month) + ' ' +  element.balance + '</p>'
+        i++
+    });
+
+    return [day, month, i]
+    // return cardCalc
 }
+
+function calculate_payoff(){
+    document.querySelector('div#output').innerHTML = ''
+    let month = nextPayday.getMonth()
+    let day = nextPayday.getDate()
+    let i = 1
+
+    for (card in cards){
+
+        result = calculateCard(card, day, month, i)
+        day, month, i = result[0], result[1], result[2]
+    }
+    document.querySelector('div#output').innerHTML = '<h2> Total Cards Ran: ' + cards.length + '</h2>' + document.querySelector('div#output').innerHTML
+    document.querySelector('div#cc_info').style.display = 'none'
+    document.querySelector('div#user_info').style.display = 'block'
+    cards = []
+}
+
+// function calculatePayoff(){
+//     document.querySelector('div#output').innerHTML = ''
+//     // document.querySelector('h3#output').innerHTML = ''
+//     // document.querySelector('p#output').innerHTML = ''
+//     let month = []
+//     for (card in cards){
+//         let curCard = cards[card]
+//         let dailyAPR = (curCard.apr / 100.00) / 365.00
+//         let curmonth = nextPayday.getMonth()
+//         let curday = nextPayday.getDate()
+//         let monthPay = 1
+//         let payment = 0
+//         while (curCard.balance > 0){
+
+//             if (paymentFreq === 'pay-monthly' || incomePeriod === 'monthly') {
+//                 //Do calculations for every monthly pay
+
+//             } else if (paymentFreq === 'pay-period') {
+//                 //Do calculations for every payday based on payday
+//                 daysInMonth = monthsArr[curmonth]
+//                 // console.log(curday + '|' + curmonth + '|' + monthPay)
+//                 if (curday + 14 < daysInMonth){
+//                     curday += 14
+//                     monthPay++
+//                 } else {
+//                     //end the month calculations
+//                     curCard.balance = currency(((Number(curCard.balance)+Number(curCard.bills))*(1+(dailyAPR*daysInMonth)))-(Number(curCard.payment)*monthPay), 2)
+//                     if(curCard.balance <= 0){
+//                         curCard.balance = 0
+//                         if (card != cards.length - 1){
+//                             payment = curCard.payment - curCard.bills / 2
+//                         }
+//                     }
+//                     month.push(curCard.balance)
+//                     //increment month and add days and start over
+//                     curday = (curday + 14) - daysInMonth
+//                     if (curmonth === 11){
+//                         curmonth = 0
+//                     } else {
+//                         curmonth++
+//                     }
+//                     monthPay = 1
+//                 }
+//                 // month = nextPayday.getMonth()
+//                 // console.log(months.month)
+//                 // console.log(nextPayday.getDate())
+//             }
+//         }
+//         let i = 1
+//         cardNum = Number(card) + 1
+//         if (Number(cardNum) > 1){
+//             document.querySelector('div#output').innerHTML = '<h3>Total Cards ' + cardNum + '</h3>' + document.querySelector('div#output').text
+//         } else {
+//             document.querySelector('div#output').innerHTML = '<h3>Card ' + cardNum + '</h3>'
+//         }
+//         month.forEach(element => {
+//             document.querySelector('div#output').innerHTML += '<p>' + i + ' month: ' +  element + '</p>'
+//             i++
+//         });
+//     }
+//     // document.querySelector('div#output').innerHTML = month
+//     document.querySelector('div#cc_info').style.display = 'none'
+//     document.querySelector('div#user_info').style.display = 'block'
+//     cards = []
+// }
